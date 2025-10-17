@@ -171,7 +171,7 @@ exports.deleteCar = async (req, res) => {
 exports.getBookings = async (req, res) => {
     try {
         const bookings = await Booking.find({ 'customer.phone': req.user.phone })
-            .populate('mechanic', 'name rating streetaddress city state zip')
+            .populate('mechanic', 'name rating streetaddress city state zip profile')
             .sort({ createdAt: -1 });
 
         // Transform data to match frontend format
@@ -200,7 +200,8 @@ exports.getBookings = async (req, res) => {
             mechanicPhone: booking.mechanic?.phone || '+91 98765 43210',
             location: `${booking.mechanic?.streetaddress || ''}, ${booking.mechanic?.city || ''}, ${booking.mechanic?.state || ''}, ${booking.mechanic?.zip || ''}`,
             amount: booking.amount,
-            notes: booking.notes
+            notes: booking.notes,
+            profilePic: booking.mechanic?.profile || ''
         }));
 
         res.json(transformedBookings);

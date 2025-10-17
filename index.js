@@ -11,7 +11,7 @@ const servicesRoutes = require("./routes/services");
 const analyticsRoutes = require("./routes/analytics");
 const authRoutes = require("./routes/authRoutes");
 const userprofile = require("./routes/userprofile");
-const {adminAuthmiddleware} = require("./middleware/authadmin")
+const { adminAuthmiddleware } = require("./middleware/authadmin")
 const amdinAuth = require("./routes/adminAuth");
 const publicRoutes = require("./routes/public");
 // Load environment variables
@@ -47,12 +47,12 @@ app.use("/api/public", publicRoutes);
 // app.use('/api/users', userRoutes);
 
 app.use(adminAuthmiddleware);
-app.use("/api/admin", userRoutes);
+app.use("/api/admin/user", userRoutes);
 app.use("/api/admin", adminRoutes);
-app.use("/api/admin", bookingRoutes);
-app.use("/api/admin", sparePartsRoutes);
-app.use("/api/admin", servicesRoutes);
-app.use("/api/admin", analyticsRoutes);
+app.use("/api/admin/booking", bookingRoutes);
+app.use("/api/admin/spareParts", sparePartsRoutes);
+app.use("/api/admin/services", servicesRoutes);
+app.use("/api/admin/analytics", analyticsRoutes);
 
 
 

@@ -51,7 +51,7 @@ const updateSparePartStatus = async (req, res) => {
         }
 
         const formattedSparePart = {
-            id: sparePart._id,
+            _id: sparePart._id,
             requestId: sparePart.requestid,
             serviceId: sparePart.serviceId,
             mechanic: sparePart.mechanicId ? {
@@ -90,7 +90,7 @@ const getSparePartById = async (req, res) => {
         }
 
         const formattedSparePart = {
-            id: sparePart._id,
+            _id: sparePart._id,
             requestId: sparePart.requestid,
             serviceId: sparePart.serviceId,
             mechanic: sparePart.mechanicId ? {
