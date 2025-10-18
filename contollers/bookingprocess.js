@@ -4,6 +4,7 @@ const Services = require('../models/Services');
 const User = require('../models/User');
 
 const { ObjectId } = require('mongodb'); // or your MongoDB driver
+const { sendNotificationToMechanic } = require('../socket/socket');
 
 
 const getCategoryIcon = (categoryName) => {
@@ -116,7 +117,7 @@ exports.createBooking = async (req, res) => {
             dateTime,
             totalPrice
         } = req.body;
-        console.log(req.body,"req.body");
+        console.log(req.body, "req.body");
 
 
         // Get user and mechanic details
@@ -153,7 +154,7 @@ exports.createBooking = async (req, res) => {
             },
             serviceType: services.map(s => s.name).join(', '),
             mechanic: mechanicId,
-            dateTime:new Date(dateTime),
+            dateTime: new Date(dateTime),
             amount: totalPrice,
             status: 'pending',
             spareParts: [],
@@ -173,7 +174,20 @@ exports.createBooking = async (req, res) => {
             $push: { bookings: booking._id },
             lastService: new Date()
         });
+        await Mechanic.findByIdAndUpdate(mechanicId, {
+            $push: { notifications: { message: 'New booking received', type: 'booking', read: false } },
+        });
 
+        sendNotificationToMechanic(mechanicId, {
+            id: booking._id,
+            customerName: user.fullname,
+            mechanicName: mechanic.name,
+            services: services.map(s => s.name),
+            dateTime: booking.dateTime,
+            totalPrice: booking.amount,
+            status: booking.status
+        });
+       
         res.status(201).json({
             message: 'Booking created successfully',
             booking: {
@@ -186,6 +200,7 @@ exports.createBooking = async (req, res) => {
                 status: booking.status
             }
         });
+
 
     } catch (error) {
         console.error('Error creating booking:', error);
@@ -218,7 +233,7 @@ exports.getUserBookings = async (req, res) => {
             notes: booking.notes
         }));
 
-        res.json(bookings);
+        res.status(200).json(bookings);
     } catch (error) {
         console.error('Error fetching user bookings:', error);
         res.status(500).json({ message: 'Server error while fetching bookings' });

@@ -22,6 +22,14 @@ const mechanicSchema = new moongoose.Schema({
     }],
     totalbookings: { type: Number, default: 0 },
     mapsLink: { type: String, required: true },
+    notifications: {
+        type: [{
+            message: { type: String },
+            type: { type: String },
+            read: { type: Boolean, default: false }
+        }],
+        default: []
+    }
 }, { timestamps: true })
 
 module.exports = moongoose.model("Mechanic", mechanicSchema);

@@ -236,7 +236,7 @@ exports.getBookings = async (req, res) => {
 
     const total = await Booking.countDocuments(query);
 
-    res.json({
+    res.status(200).json({
       bookings: transformedBookings,
       totalPages: Math.ceil(total / limit),
       currentPage: parseInt(page),
