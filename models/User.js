@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const userSchema = new mongoose.Schema({
     fullname: { type: String, required: true },
-    phone: { type: String, required: true },
+    phone: { type: String, required: true,unique:true },
     email: { type: String, default: "" },
     password: { type: String, required: true },
     pic: { type: String, default: "https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg" },
@@ -17,6 +17,7 @@ const userSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "Booking"
     }],
+    fcmToken: { type: String, default: "" }
 }, {
     timestamps: true
 });

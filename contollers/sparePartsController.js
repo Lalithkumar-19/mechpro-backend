@@ -1,5 +1,6 @@
 const SpareParts = require('../models/SpareParts');
 const Mechanic = require('../models/Mechanic');
+const fcmService = require('../services/fcmService');
 
 // Get all spare parts requests
 const getAllSpareParts = async (req, res) => {
@@ -44,7 +45,7 @@ const updateSparePartStatus = async (req, res) => {
             requestId,
             { status },
             { new: true }
-        ).populate('mechanicId', 'name phone email');
+        ).populate('mechanicId', 'name phone email fcmToken');
 
         if (!sparePart) {
             return res.status(404).json({ message: 'Spare part request not found' });
@@ -69,6 +70,16 @@ const updateSparePartStatus = async (req, res) => {
             status: sparePart.status,
             requestedAt: sparePart.createdAt
         };
+
+        if (sparePart.mechanicId.fcmToken != "") {
+            fcmService.sendToUser(sparePart.mechanicId.fcmToken, {
+                title: 'Spare part request status updated',
+                body: `Your spare part request status has been updated to ${sparePart.status}`,
+                type: 'notification',
+                bookingId: sparePart._id
+            }, "mechanic", sparePart.mechanicId._id);
+        }
+
 
         res.status(200).json(formattedSparePart);
     } catch (error) {

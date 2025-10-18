@@ -11,7 +11,8 @@ const superAdminSchema = new mongoose.Schema({
         title: String,
         date: { type: Date, default: Date.now },
         from: String,
-    }]
+    }],
+    fcmToken: { type: String, default: "" }
 
 
 })

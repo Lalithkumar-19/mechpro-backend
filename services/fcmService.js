@@ -1,25 +1,28 @@
 const admin = require('../config/firebaseAdmin');
+const User = require('../models/User');
+const SuperAdmin = require('../models/SuperAdmin');
+const Mechanic = require('../models/Mechanic');
+
 
 class FCMService {
-    async sendToUser(userId, message) {
+    async sendToUser(fcmToken, message,type,userId) {
         try {
-            // Get user from database
-            const user = await User.findById(userId);
 
-            if (!user || !user.fcmToken) {
+            if (!fcmToken) {
                 console.log('No FCM token found for user:', userId);
                 return;
             }
 
             const payload = {
-                token: user.fcmToken,
+                token: fcmToken,
                 notification: {
                     title: message.title,
                     body: message.body,
+                    
                 },
                 data: {
-                    type: message.type,
-                    bookingId: message.bookingId || '',
+                    type: message.type || '',
+                    bookingId: message.bookingId ? message.bookingId.toString() : '',
                     click_action: 'FLUTTER_NOTIFICATION_CLICK'
                 }
             };
@@ -32,7 +35,15 @@ class FCMService {
 
             // Remove invalid token
             if (error.code === 'messaging/registration-token-not-registered') {
+                if(type==='user'){
                 await User.findByIdAndUpdate(userId, { $unset: { fcmToken: 1 } });
+                }
+                if(type==='mechanic'){
+                await Mechanic.findByIdAndUpdate(userId, { $unset: { fcmToken: 1 } });
+                }
+                if(type==='admin'){
+                await SuperAdmin.findByIdAndUpdate(userId, { $unset: { fcmToken: 1 } });
+                }
             }
         }
     }

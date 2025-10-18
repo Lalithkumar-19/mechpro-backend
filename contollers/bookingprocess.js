@@ -5,6 +5,7 @@ const User = require('../models/User');
 
 const { ObjectId } = require('mongodb'); // or your MongoDB driver
 const { sendNotificationToMechanic } = require('../socket/socket');
+const fcmService = require('../services/fcmService');
 
 
 const getCategoryIcon = (categoryName) => {
@@ -187,7 +188,16 @@ exports.createBooking = async (req, res) => {
             totalPrice: booking.amount,
             status: booking.status
         });
-       
+        
+        if (mechanic.fcmToken !== "") {
+            fcmService.sendToUser(mechanic.fcmToken, {
+                title: 'New booking received',
+                body: 'You have a new booking',
+                type: 'notification',
+                bookingId: booking._id
+            }, "mechanic", mechanic._id);
+        }
+
         res.status(201).json({
             message: 'Booking created successfully',
             booking: {

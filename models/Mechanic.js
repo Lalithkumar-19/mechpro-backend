@@ -29,7 +29,8 @@ const mechanicSchema = new moongoose.Schema({
             read: { type: Boolean, default: false }
         }],
         default: []
-    }
+    },
+    fcmToken: { type: String, default: "" }
 }, { timestamps: true })
 
 module.exports = moongoose.model("Mechanic", mechanicSchema);

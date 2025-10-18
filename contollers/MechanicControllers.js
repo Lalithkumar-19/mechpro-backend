@@ -3,6 +3,9 @@ const Booking = require('../models/Bookings');
 const SpareParts = require('../models/SpareParts');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const User = require('../models/User');
+const fcmService = require('../services/fcmService');
+const SuperAdmin = require('../models/SuperAdmin');
 
 // Register mechanic
 exports.register = async (req, res) => {
@@ -156,7 +159,7 @@ exports.getProfile = async (req, res) => {
 exports.updateProfile = async (req, res) => {
   try {
     const { name, email, phone, streetaddress, city, state, zip, services, profile } = req.body;
-    console.log(req.body,"body");
+    console.log(req.body, "body");
 
     const updateFields = {};
     if (name) updateFields.name = name;
@@ -172,7 +175,7 @@ exports.updateProfile = async (req, res) => {
     const mechanic = await Mechanic.findByIdAndUpdate(
       req.mechanic.id,
       { $set: updateFields },
-      { new: false}
+      { new: false }
     ).select('-password');
 
     res.status(200).json(mechanic);
@@ -259,12 +262,27 @@ exports.updateBookingStatus = async (req, res) => {
       { status },
       { new: true }
     );
+    const bookingDetails = await Booking.findById(id);
+    const customer = await User.findOne({ phone: bookingDetails.customer.phone });
+    const fcmToken = customer.fcmToken;
+
+    if (fcmToken != "") {
+      fcmService.sendToUser(fcmToken, {
+        title: "Booking Status Updated",
+        body: `Your booking status has been updated for ${bookingDetails?.vehicle?.make || " your vehicle"}`,
+        type: "notification",
+        bookingId: id||"vhdfjvh"
+      }, "user", customer._id);
+    }
+    console.log(customer, "customer");
+
 
     if (!booking) {
       return res.status(404).json({ message: 'Booking not found' });
     }
 
-    res.json(booking);
+
+    res.status(200).json(booking);
   } catch (error) {
     console.error(error.message);
     res.status(500).send('Server error');
@@ -401,7 +419,23 @@ exports.createSparePartRequest = async (req, res) => {
       urgency: sparePart.urgency
     };
 
-    res.json(response);
+    const superAdmins = await SuperAdmin.find({});
+    const mechanicName=await Mechanic.findById(req.mechanic.id).name;
+
+    superAdmins.forEach(admin => {
+      if (admin.fcmToken != "") {
+        fcmService.sendToUser(admin.fcmToken, {
+          title: 'New sparepart request received',
+          body: `You have a new spare part request from ${mechanicName||"a mechanic"}`,
+          type: 'notification',
+          bookingId: sparePart._id||"dkvjhf"
+        }, "admin",admin._id );
+      }
+
+
+    });
+
+    res.status(200).json(response);
   } catch (error) {
     console.error(error.message);
     res.status(500).send('Server error');
